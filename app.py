@@ -1,9 +1,14 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import json
 import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 ITEMS_FILE = 'items.json'
+IMAGES_DIR = os.path.join(app.root_path, 'images')
+
+if not os.path.exists(IMAGES_DIR):
+    os.makedirs(IMAGES_DIR)
 
 def load_items():
     if os.path.exists(ITEMS_FILE):
@@ -25,14 +30,22 @@ def next_item_id():
 def add_item():
     name = request.form.get('name')
     category = request.form.get('category')
-    if not name or not category:
-        return jsonify({"error": "Missing name or category"}), 400
+    image = request.files.get('image')  # Get the image from form-data
+    if not name or not category or not image:
+        return jsonify({"error": "Missing name, category, or image"}), 400
     
     items = load_items()
     item_id = next_item_id()
-    items.append({"id": item_id, "name": name, "category": category})
+    filename = secure_filename(f'{item_id}.jpg')
+    image.save(os.path.join(IMAGES_DIR, filename))  # Save the image file
+
+    items.append({"id": item_id, "name": name, "category": category, "image_url": f'/image/{item_id}.jpg'})
     save_items(items)
     return jsonify({"message": f"item received: {name}", "id": item_id}), 201
+
+@app.route('/image/<filename>')
+def serve_image(filename):
+    return send_from_directory(IMAGES_DIR, filename)
 
 @app.route('/items', methods=['GET'])
 def get_items():
