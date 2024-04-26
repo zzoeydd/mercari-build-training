@@ -6,11 +6,13 @@ import { Listing } from './components/Listing';
 function App() {
   // reload ItemList after Listing complete
   const [reload, setReload] = useState(true);
+
   return (
-    <div>
-      <header className='Title'>
+    <div className="App">
+      <header className="Title">
+        <img src={`${process.env.PUBLIC_URL}/Mercari Logo.png`} alt="Mercari Logo" className="CompanyLogo" />
         <p>
-          <b>Simple Mercari</b>
+          <b>Simple Mercari Web by Zoey</b>
         </p>
       </header>
       <div>
@@ -20,7 +22,7 @@ function App() {
         <ItemList reload={reload} onLoadCompleted={() => setReload(false)} />
       </div>
     </div>
-  )
+  );
 }
 
 export default App;
