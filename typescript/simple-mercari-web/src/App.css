@@ -160,7 +160,7 @@
 }
 
 .Listing input[type='file'] {
-  padding: 7px;
+  padding: 0px;
 }
 
 .Listing button {
@@ -180,4 +180,24 @@
 .Item:hover {
   transform: translateY(-5px);
   background-color: #f008081f;
+}
+
+.input_container {
+  border: 1px solid #e5e5e5;
+}
+
+input[type=file]::file-selector-button {
+  background-color: #fff;
+  color: #000;
+  border: 0px;
+  border-right: 1px solid #e5e5e5;
+  padding: 10px 15px;
+  margin-right: 20px;
+  transition: .5s;
+}
+
+input[type=file]::file-selector-button:hover {
+  background-color: #eee;
+  border: 0px;
+  border-right: 1px solid #e5e5e5;
 }
