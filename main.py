@@ -11,13 +11,14 @@ class Item(BaseModel):
     name: str
     category: str
 
-items = []
+app = FastAPI()
 
-try:
-    with open("items.json", "r") as f:
-        items = json.load(f)["items"]
-except FileNotFoundError:
-    items = []
+# Load items on server start
+with open("items.json", "r") as f:
+    items = json.load(f)["items"]
+
+# Ensure the images directory exists
+os.makedirs("images", exist_ok=True)
 
 origins = [os.environ.get("FRONT_URL", "http://localhost:3000")]
 app.add_middleware(
