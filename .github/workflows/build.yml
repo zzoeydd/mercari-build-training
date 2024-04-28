@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
      contents: read
+     #make sure package has write access
      packages: write
     steps:
     # Checkout repository
@@ -36,6 +37,7 @@ jobs:
         pwd
         echo 'Tag: ${{ steps.meta.outputs.tags }}'
         echo 'Label: ${{ steps.meta.labels.tags }}'
+
 
     - name: Build and push Docker image
       uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
