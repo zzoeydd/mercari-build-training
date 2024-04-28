@@ -38,7 +38,6 @@ def root():
     return {"message": "Hello, world!"}
 
 @app.post("/items")
-
 def add_item(name: str = Form(...), category: str = Form(...), image: UploadFile = File(...)):
     conn = sqlite3.connect('mercari.sqlite3')  
     cur = conn.cursor() 
