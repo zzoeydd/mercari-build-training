@@ -1,8 +1,15 @@
-FROM alpine
+FROM python:3.12.2
 
-RUN addgroup -S mercari && adduser -S trainee -G mercari
-# RUN chown -R trainee:mercari /path/to/db
+WORKDIR /app
 
-USER trainee
+COPY . /app
 
-CMD ["python", "-V"]
+COPY items.json /app 
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 9000
+
+ENV NAME World
+
+CMD ["python", "app.py"]
