@@ -1,0 +1,22 @@
+services:
+  web:
+    build: ./typescript/simple-mercari-web
+    image: build2024/web:latest
+    volumes:
+      - ./typescript/simple-mercari-web/public:/app/public
+    ports:
+      - "3000:3000"
+    environment:
+      - FRONT_URL=http://localhost:3000
+    depends_on:
+      - api
+
+  api:
+    build: ./python 
+    image: build2024/app:latest
+    volumes:
+      - ./python:/app 
+    ports:
+      - "9000:9000"
+    environment:
+      - REACT_APP_API_URL=http://api:9000 
