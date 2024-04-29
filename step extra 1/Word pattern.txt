@@ -1,0 +1,48 @@
+class Solution(object):
+    def wordPattern(self, pattern, s):
+        """
+        :type pattern: str
+        :type s: str
+        :rtype: bool
+        """
+        #find unique letters
+        letters=set(pattern)
+
+        #generate a list of words
+        words = s.split()
+
+        #initialise follow
+        follow = True
+
+        #check that pattern length is same as words length
+        if (len(pattern)!=len(words)):
+            follow=False
+            return(follow)
+
+        #loop through unique letters
+        for letter in letters:
+            
+            #find first index of the current letter within the pattern string
+            index = pattern.index(letter)
+            
+            #find the associated word for that letter
+            word = words[index]
+            
+            #loop through all the remaining letters in the pattern string
+            #and detect if any letters are the same as the one being checked
+            #if it matches, is the corresponding word different?
+            #if it is different, then set follow to False
+            for i in range(index+1,len(pattern)):
+                if (pattern[i] == letter):
+                    if (word != words[i]):
+                        follow = False
+                        return(follow)
+
+                #if the letter is not the same as the one being checked
+                #is the corresponding word the same?
+                #if it is, then set follow to Folse
+                else:
+                    if (word == words[i]):
+                        follow = False
+                        return(follow)
+        return(follow)

@@ -1,0 +1,44 @@
+class Solution(object):
+    def getIntersectionNode(self, headA, headB):
+        """
+        :type head1, head1: ListNode
+        :rtype: ListNode
+        """
+        #step 2
+        #function calculating the length of linked list
+        def get_length(node):
+            list_length = 0
+            #if the node exists, keep adding one to length then move to next node
+            while node:
+                list_length += 1
+                node = node.next
+            return list_length
+    
+        #function to move a pointer forward by a certain number of steps
+        def move_pointer(node, steps):
+            for index in range(steps):
+                node = node.next
+            return node
+    
+        #Calculate the lengths of the two linked lists
+        length_A = get_length(headA)
+        length_B = get_length(headB)
+    
+        # Calculate the difference in lengths between the two lists
+        diff = abs(length_A - length_B)
+    
+        # Move the pointer of the longer list forward by the difference
+        if length_A > length_B:
+            headA = move_pointer(headA, diff)
+        else:
+            headB = move_pointer(headB, diff)
+    
+        #While loop through both lists until an intersection is found or completion of lists
+        while headA and headB:
+            if headA == headB:
+                return headA
+            headA = headA.next
+            headB = headB.next
+    
+        #return None if no intersection is found
+        return None

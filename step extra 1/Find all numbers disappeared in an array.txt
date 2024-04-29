@@ -1,0 +1,21 @@
+class Solution(object):
+    def findDisappearedNumbers(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: List[int]
+        """
+        #find length of list
+        length_list = len(nums)
+
+        #find only unique values of list
+        unique_list = set(nums)
+
+        #initialise not found numbers
+        missing_nums = []
+
+        #loop index from 1 to the length of the list (+1 to include the max number in the loop)
+        for index in range (1,length_list+1):
+            #check if the index is not in the list, if so add it to the missing number list
+            if (index not in unique_list):
+                missing_nums.append(index)
+        return missing_nums

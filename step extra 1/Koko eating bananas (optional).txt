@@ -1,0 +1,19 @@
+import math
+class Solution(object):
+  def minEatingSpeed(self, piles, h):
+    """
+    :type piles: List[int]
+    :type h: int
+    :rtype: int
+    """
+    solved = False
+    index = 1
+    while (solve == False):
+      hours = 0
+      for i in piles:
+        hours += math.ceil(i/index)
+      if (hours <= h):
+        solved = 1
+      else:
+        index += 1
+    print(index)
