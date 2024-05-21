@@ -1,75 +1,69 @@
-import uvicorn
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Query
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 import json
-import hashlib
 import os
-import sqlite3
+from werkzeug.utils import secure_filename
 
-class Item(BaseModel):
-    name: str
-    category: str
+app = Flask(__name__)
+CORS(app)
+ITEMS_FILE = 'items.json'
+IMAGES_DIR = os.path.join(app.root_path, 'images')
 
-items = []
+if not os.path.exists(IMAGES_DIR):
+    os.makedirs(IMAGES_DIR)
 
-try:
-    with open("items.json", "r") as f:
-        items = json.load(f)["items"]
-except FileNotFoundError:
-    items = []
+def load_items():
+    if os.path.exists(ITEMS_FILE):
+        with open(ITEMS_FILE, 'r') as file:
+            data = json.load(file)
+            return data['items']
+    else:
+        return []
 
-origins = [os.environ.get("FRONT_URL", "http://localhost:3000")]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def save_items(items):
+    with open(ITEMS_FILE, 'w') as file:
+        json.dump({"items": items}, file)
 
-# Function to save items to file
-def save_items():
-    with open("items.json", "w") as f:
-        json.dump({"items": items}, f)
+def next_item_id():
+    items = load_items()
+    return max(item['id'] for item in items) + 1 if items else 1
 
-@app.get("/")
+@app.route('/')
 def root():
-    return {"message": "Hello, world!"}
+    return jsonify({"message": "Hello, world!"})
 
-@app.post("/items")
-def add_item(name: str = Form(...), category: str = Form(...), image: UploadFile = File(...)):
-    conn = sqlite3.connect('mercari.sqlite3')  
-    cur = conn.cursor() 
-    # Execute SQL query to insert the new item
-    cur.execute("INSERT INTO items (name, category, image_name) VALUES (?, ?, ?)", (name, category, image_name))
-    conn.commit() 
-    conn.close()  
-    return {"message": "Item added successfully"}  
+@app.route('/items', methods=['POST'])
+def add_item():
+    name = request.form.get('name')
+    category = request.form.get('category')
+    image = request.files.get('image')  # Get the image from form-data
+    if not name or not category or not image:
+        return jsonify({"error": "Missing name, category, or image"}), 400
+    
+    items = load_items()
+    item_id = next_item_id()
+    filename = secure_filename(f'{item_id}.jpg')
+    image.save(os.path.join(IMAGES_DIR, filename))  # Save the image file
 
-@app.get("/items")
+    items.append({"id": item_id, "name": name, "category": category, "image_url": f'/image/{item_id}.jpg'})
+    save_items(items)
+    return jsonify({"message": f"item received: {name}", "id": item_id}), 201
+
+@app.route('/image/<filename>')
+def serve_image(filename):
+    return send_from_directory(IMAGES_DIR, filename)
+
+@app.route('/items', methods=['GET'])
 def get_items():
-    conn = sqlite3.connect('mercari.sqlite3')
-    cur = conn.cursor()  
-    cur.execute("""
-        SELECT items.id, items.name, categories.name AS category_name, items.image_name
-        FROM items
-        JOIN categories ON items.category_id = categories.id
-    """)
-    items = cur.fetchall()
-    conn.close()
-    return {"items": [{"id": item[0], "name": item[1], "category": item[2], "image_name": item[3]} for item in items]}
+    items = load_items()
+    return jsonify({"items": items}), 200
 
-@app.get("/search")
-def search_items(keyword: str = Query(None, title="Search keyword")):
-    conn = sqlite3.connect('mercari.sqlite3')
-    cur = conn.cursor()
-    # Use the LIKE operator in SQL for pattern matching
-    cur.execute("SELECT * FROM items WHERE name LIKE ?", ('%' + keyword + '%',))
-    items = cur.fetchall()
-    conn.close()
-    items_list = [{'id': item[0], 'name': item[1], 'category': item[2], 'image_name': item[3]} for item in items]
-    return {"items": items_list}
+@app.route('/search', methods=['GET'])
+def search_items():
+    keyword = request.args.get('keyword', '')
+    items = load_items()
+    filtered_items = [item for item in items if keyword.lower() in item['name'].lower()]
+    return jsonify({"items": filtered_items}), 200
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=9000)
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=9000)
